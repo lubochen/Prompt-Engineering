@@ -1,9 +1,7 @@
 package org.example.openai;
 
-import com.volcengine.ark.runtime.model.completion.chat.ChatMessage;
 
 import java.io.IOException;
-import java.net.ProtocolException;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -11,6 +9,7 @@ import java.util.List;
  * @description 抽象类，存储当前模型的测试数据
  */
 public abstract class BaseOpenAi implements OpenAi{
+
     private int TP = 0;
     private int TN = 0;
     private int FP = 0;
@@ -51,6 +50,9 @@ public abstract class BaseOpenAi implements OpenAi{
     // 增加总样本数计数
     public void addTotalCount() {
         total++;
+    }
+    public Integer getTotalCount() {
+        return total;
     }
     // 计算准确率（Accuracy），并格式化返回值保留四位小数
     public String calculateAccuracy() {

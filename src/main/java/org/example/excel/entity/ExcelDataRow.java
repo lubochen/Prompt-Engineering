@@ -1,4 +1,4 @@
-package org.example.excel;
+package org.example.excel.entity;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;

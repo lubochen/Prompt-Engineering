@@ -27,4 +27,7 @@ public interface OpenAi {
     String calculateF1Score();
 
     String getModelName();
+
+    Integer getTotalCount();
+
 }

@@ -1,11 +1,18 @@
-package org.example.openai;
+package org.example.openai.service;
 
 import org.example.constant.Model;
-import org.example.excel.ExcelDataRow;
+import org.example.excel.entity.ExcelDataRow;
+import org.example.excel.ExcelWriter;
+import org.example.excel.entity.ExportExcelDataRow;
+import org.example.openai.OpenAi;
+import org.example.openai.impl.AliOpenAi;
+import org.example.openai.impl.ChatglmOpenAi;
+import org.example.openai.impl.DoubaoOpenAi;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -52,6 +59,7 @@ public class OpenAiService {
 
         for(OpenAi openAi: openAiList){
             Runnable runnable = () -> {
+                List<ExportExcelDataRow> exportData = new ArrayList<>();
                 long startTime = System.currentTimeMillis();
                 for (ExcelDataRow data : dataList) {
                     String result = openAi.sendMessage(Arrays.asList("作为一名专业的代码专家，你只能回复TP或FP。分析给定的warning_line和warning_method,告诉我这个代码是否存在源码警告问题。如果存在源码警告问题，返回TP；若不存在，返回FP", data.getPrompt()));
@@ -68,6 +76,12 @@ public class OpenAiService {
                         if (!result.equals(data.getFinalLabel()) && data.getFinalLabel().equals("FP")) {
                             openAi.addFalsePositive();
                         }
+                        exportData.add(ExportExcelDataRow.builder()
+                                .index(openAi.getTotalCount())
+                                .before_index(data.getIndex())
+                                .finalLabel(data.getFinalLabel())
+                                .predictionLabel(result)
+                                .build());
                         openAi.addTotalCount();
                     }
                 }
@@ -84,6 +98,7 @@ public class OpenAiService {
                 System.out.println();
                 System.out.println();
                 System.out.println();
+                ExcelWriter.writer(exportData, openAi.getModelName());
             };
             executorService.submit(runnable);
         }

@@ -1,4 +1,4 @@
-package org.example.openai;
+package org.example.openai.impl;
 
 import com.zhipu.oapi.ClientV4;
 import com.zhipu.oapi.Constants;
@@ -6,13 +6,14 @@ import com.zhipu.oapi.service.v4.model.ChatCompletionRequest;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
 import com.zhipu.oapi.service.v4.model.ChatMessageRole;
 import com.zhipu.oapi.service.v4.model.ModelApiResponse;
+import org.example.openai.BaseOpenAi;
 
 import java.util.ArrayList;
 import java.util.List;
 /**
  * @description 智谱AI大模型接口
  */
-public class ChatglmOpenAi extends BaseOpenAi{
+public class ChatglmOpenAi extends BaseOpenAi {
     public ChatglmOpenAi(String key, String code, String name){
         this.client = new ClientV4.Builder(key).build();
         this.code = code;

@@ -1,6 +1,7 @@
-package org.example.openai;
+package org.example.openai.impl;
 
 import com.google.gson.Gson;
+import org.example.openai.BaseOpenAi;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -13,7 +14,7 @@ import java.util.List;
 /**
  * @description 阿里大模型接口
  */
-public class AliOpenAi extends BaseOpenAi{
+public class AliOpenAi extends BaseOpenAi {
     private String key;
     private String code;
 

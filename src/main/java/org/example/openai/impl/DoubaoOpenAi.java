@@ -1,14 +1,15 @@
-package org.example.openai;
+package org.example.openai.impl;
 
 import com.volcengine.ark.runtime.model.completion.chat.*;
 import com.volcengine.ark.runtime.service.ArkService;
+import org.example.openai.BaseOpenAi;
 
 import java.util.ArrayList;
 import java.util.List;
 /**
  * @description 字节大模型豆包接口
  */
-public class DoubaoOpenAi extends BaseOpenAi{
+public class DoubaoOpenAi extends BaseOpenAi {
     private String key;
     private String code;
     public DoubaoOpenAi(String key, String code, String name) {
