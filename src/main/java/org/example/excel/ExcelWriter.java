@@ -16,8 +16,12 @@ public class ExcelWriter {
         // 按照指定格式格式化时间
         String formattedTime = now.format(formatter);
         // 文件名
-        String fileName = "src/main/resources/" + formattedTime +'-'+ modelName +"-result.xlsx";
-
+        String fileName = "src/main/resources/" + formattedTime +'-'+ modelName +"-result";
+        // 文件名过长时截取
+        if (fileName.length() > 180) {
+            fileName = fileName.substring(0, 180);
+        }
+        fileName += ".xlsx";
         // 使用EasyExcel写入数据到Excel文件
         EasyExcel.write(fileName, ExportExcelDataRow.class).sheet("Sheet1").doWrite(exportData);
 

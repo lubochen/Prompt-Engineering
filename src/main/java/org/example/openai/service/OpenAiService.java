@@ -9,9 +9,8 @@ import org.example.openai.impl.AliOpenAi;
 import org.example.openai.impl.ChatglmOpenAi;
 import org.example.openai.impl.DoubaoOpenAi;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,13 +26,14 @@ public class OpenAiService {
     static String doubaoKey;
     static String aliKey;
     static String zhipuKey;
+    static String prompt;
     public static void loadKey(){
         // 创建Properties对象
         Properties properties = new Properties();
         // 加载配置文件，文件路径根据实际情况修改
         try {
-            InputStream inputStream = OpenAiService.class.getClassLoader().getResourceAsStream("application.properties");
-            properties.load(inputStream);
+            InputStreamReader reader = new InputStreamReader(OpenAiService.class.getClassLoader().getResourceAsStream("application.properties"), StandardCharsets.UTF_8);
+            properties.load(reader);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -43,6 +43,7 @@ public class OpenAiService {
         doubaoKey = properties.getProperty("doubaoKey");
         aliKey = properties.getProperty("aliKey");
         zhipuKey = properties.getProperty("zhipuKey");
+        prompt = properties.getProperty("prompt");
     }
     public static void test(List<ExcelDataRow> dataList){
         loadKey();
@@ -62,18 +63,23 @@ public class OpenAiService {
                 List<ExportExcelDataRow> exportData = new ArrayList<>();
                 long startTime = System.currentTimeMillis();
                 for (ExcelDataRow data : dataList) {
-                    String result = openAi.sendMessage(Arrays.asList("作为一名专业的代码专家，你只能回复TP或FP。分析给定的warning_line和warning_method,告诉我这个代码是否存在源码警告问题。如果存在源码警告问题，返回TP；若不存在，返回FP", data.getPrompt()));
-                    if (result.equals("TP") || result.equals("FP")) {
-                        if (result.equals(data.getFinalLabel()) && data.getFinalLabel().equals("TP")) {
+                    String result = null;
+                    try {
+                        result = openAi.sendMessage(Arrays.asList(prompt, data.getPrompt()));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (result.startsWith("TP") || result.startsWith("FP")) {
+                        if (result.startsWith(data.getFinalLabel()) && data.getFinalLabel().equals("TP")) {
                             openAi.addTruePositive();
                         }
-                        if (result.equals(data.getFinalLabel()) && data.getFinalLabel().equals("FP")) {
+                        if (result.startsWith(data.getFinalLabel()) && data.getFinalLabel().equals("FP")) {
                             openAi.addTrueNegative();
                         }
-                        if (!result.equals(data.getFinalLabel()) && data.getFinalLabel().equals("TP")) {
+                        if (!result.startsWith(data.getFinalLabel()) && data.getFinalLabel().equals("TP")) {
                             openAi.addFalseNegative();
                         }
-                        if (!result.equals(data.getFinalLabel()) && data.getFinalLabel().equals("FP")) {
+                        if (!result.startsWith(data.getFinalLabel()) && data.getFinalLabel().equals("FP")) {
                             openAi.addFalsePositive();
                         }
                         exportData.add(ExportExcelDataRow.builder()
@@ -84,12 +90,15 @@ public class OpenAiService {
                                 .build());
                         openAi.addTotalCount();
                     }
+                    if(openAi.getTotalCount() % 100 == 0){
+                        System.out.println( openAi.getModelName() + "已完成 = " + openAi.getTotalCount());
+                    }
                 }
                 long endTime = System.currentTimeMillis();
                 long duration = endTime - startTime;  // 计算任务运行时长
                 // 输出各项指标
                 System.out.println("------------------------------------------------------------------------");
-                System.out.println("模型名称 = " + openAi.getModelName() + "已完成训练，训练数据如下：");
+                System.out.println("模型名称 = " + openAi.getModelName() + "已完成测试，测试数据如下：");
                 System.out.println("准确率（Accuracy）: " + openAi.calculateAccuracy());
                 System.out.println("召回率（Recall）: " + openAi.calculateRecall());
                 System.out.println("精度（Precision）: " + openAi.calculatePrecision());
@@ -98,7 +107,7 @@ public class OpenAiService {
                 System.out.println();
                 System.out.println();
                 System.out.println();
-                ExcelWriter.writer(exportData, openAi.getModelName());
+                ExcelWriter.writer(exportData, openAi.getModelName()+"_"+prompt);
             };
             executorService.submit(runnable);
         }

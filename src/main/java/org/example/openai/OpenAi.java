@@ -6,7 +6,7 @@ import java.util.List;
  * @description 大模型接口
  */
 public interface OpenAi {
-    String sendMessage(List<String> prompts);
+    String sendMessage(List<String> prompts) throws InterruptedException;
 
     void addTruePositive();
 

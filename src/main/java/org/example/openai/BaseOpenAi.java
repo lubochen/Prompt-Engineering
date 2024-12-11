@@ -17,14 +17,21 @@ public abstract class BaseOpenAi implements OpenAi{
     private String modelName;
     private int total = 0;
     @Override
-    public String sendMessage(List<String> messages) {
-        try {
-            return doSendChatMessages(messages);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
+    public String sendMessage(List<String> messages) throws InterruptedException {
+        int maxRetries = 3;
+        int retryCount = 0;
+        while (retryCount < maxRetries) {
+            try {
+                return doSendChatMessages(messages);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println(modelName +" 调用过程报错，等待10秒后重试...");
+                Thread.sleep(10000); // 线程休眠10秒
+                retryCount++;
+            }
         }
+        System.out.println(modelName +" 调用过程报错累计三次，终止调用该模型");;
+        return null;
     }
     protected abstract String doSendChatMessages(List<String> messages) throws IOException, InterruptedException;
 
